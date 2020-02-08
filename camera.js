@@ -19,7 +19,11 @@ import dat from 'dat.gui';
 import Stats from 'stats.js';
 
 import {drawBoundingBox, drawKeypoints, drawSkeleton, isMobile, toggleLoadingUI, tryResNetButtonName, tryResNetButtonText, updateTryResNetButtonDatGuiCss} from './demo_util';
-
+var count = 0;//counter
+var started = false;
+var finished = false;
+var max_angle = 0;
+var min_angle = 180;
 const videoWidth = 600;
 const videoHeight = 500;
 const stats = new Stats();
@@ -294,7 +298,9 @@ function find_angle(A,B,C) {
   return Math.acos((BC*BC+AB*AB-AC*AC)/(2*BC*AB))* 180.0/Math.PI;
  }
  
- 
+ function newCount(){
+   return ++count;
+ }
 
 /**
  * Feeds an image to posenet to estimate poses - this is where the magic
@@ -395,7 +401,7 @@ function detectPoseInRealTime(video, net) {
     // Begin monitoring code for frames per second
     stats.begin();
  
-
+    var counted = false;
     let poses = [];
     let minPoseConfidence;
     let minPartConfidence;
@@ -408,10 +414,72 @@ function detectPoseInRealTime(video, net) {
         poses = poses.concat(pose);
         minPoseConfidence = +guiState.singlePoseDetection.minPoseConfidence;
         minPartConfidence = +guiState.singlePoseDetection.minPartConfidence;
-        const angle = find_angle(poses[0]["keypoints"][12]["position"], poses[0]["keypoints"][14]["position"], poses[0]["keypoints"][16]["position"]);
-        if (angle > 70 && angle < 110) {
-            console.log("angle: " + angle);
+        const angle_knee = find_angle(poses[0]["keypoints"][12]["position"], poses[0]["keypoints"][14]["position"], poses[0]["keypoints"][16]["position"]);
+        // const angle_hip = find_angle(poses[0]["keypoints"][12]["position"], poses[0]["keypoints"][14]["position"], poses[0]["keypoints"][16]["position"]);
+        // if (angle > 70 && angle < 110) {
+        //     console.log("angle: " + angle);
+        // }
+        // if(min_angle>70 && min_angle <110){
+        
+        if (started == true && finished == false && angle_knee<60){
+          started = false;
         }
+        if(started == false && angle_knee>70 && angle_knee <110){
+          console.log("min_angle_start:" + angle_knee);
+          started = true;
+        }
+        if(started == true && finished == false && angle_knee >160 && angle_knee <200){
+          console.log("max_angle_finished :"+angle_knee);
+          finished = true;
+        }
+        if(started == true && finished == true){
+          console.log(newCount());
+          console.log("count: " + count);
+          started = false;
+          finished = false;
+          // max_angle = 0;
+          // min_angle = 180;
+        }
+
+        // if(started == false){
+        //   // min_angle = Math.min(angle, min_angle);
+        //   console.log("min_angle_start:" + min_angle);
+        // }
+        // if(started == true){
+        //   max_angle = Math.max(angle,max_angle);
+        //   console.log("max_angle_start :"+max_angle);
+        // }
+
+
+
+        // min_angle = Math.min(angle,min_angle);
+        // console.log("min angle start :" + min_angle);
+        // if(min_angle >70 && min_angle <110){
+        //   console.log("min angle :" + min_angle);
+        //   started = true;
+        //   if (started==true && finished == false) {
+        //     max_angle = Math.max(angle,max_angle);
+        //     console.log("max_angle: "+max_angle);
+        //     if(max_angle>160 && max_angle < 200 && counted == false) {
+        //       console.log(newCount());
+        //       counted = true;
+        //       max_angle = 0;
+        //       min_angle = 180;
+        //       console.log("count: " + count);
+        //       break;
+        //     }
+        //   }
+
+          // if(max_angle>160 && max_angle < 200 && counted == false){
+          //   console.log(newCount());
+          //   counted = true;
+          //   max_angle = 0;
+          //   min_angle = 180;
+          //   console.Log("count: " + count);
+          //   break;
+          // }
+        //}
+
         //setTimeout(console.log("single person"),1000);        
         //setTimeout(console.log(poses),1000);
         //setInterval(log_output(poses), 2000);

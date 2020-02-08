@@ -435,6 +435,7 @@ function detectPoseInRealTime(video, net) {
         if(started == true && finished == true){
           console.log(newCount());
           console.log("count: " + count);
+          document.getElementById("count").innerHTML=("count: " + count);
           started = false;
           finished = false;
           // max_angle = 0;

@@ -1,2 +1,2 @@
 # CornellHackathon
-View WORKING1.MOV for the result
+View WORKING 1.MOV for the result
